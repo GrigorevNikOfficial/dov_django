@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Акт списания № {{ act.id }}{% endblock %}
+
+{% block content %}
+<div class="row valign-wrapper not-print">
+	<h4 class="col s8">Акт списания № {{ act.id }}</h4>
+	<div class="col s4 right-align">
+		<a href="{% url 'act_spis:edit' act.id %}" class="btn orange">
+			<i class="material-icons left">edit</i>Редактировать
+		</a>
+		<a href="{% url 'act_spis:delete' act.id %}" class="btn red" onclick="return confirm('Удалить акт?');">
+			<i class="material-icons left">delete</i>Удалить
+		</a>
+		<button class="btn green" type="button" onclick="window.print()">
+			<i class="material-icons left">print</i>Печать
+		</button>
+	</div>
+</div>
+
+<div class="card" id="act-print-area">
+	<div class="card-content">
+		<table class="striped">
+			<tbody>
+				<tr><td><b>Номер</b></td><td>{{ act.id }}</td></tr>
+				<tr><td><b>Дата</b></td><td>{{ act.date|date:"d.m.Y" }}</td></tr>
+				<tr><td><b>Контрагент</b></td><td>{{ act.customer.name }}</td></tr>
+				<tr><td><b>Договор</b></td><td>{{ act.contract|default:"—" }}</td></tr>
+				<tr><td><b>Счёт на оплату</b></td><td>{{ act.invoice|default:"—" }}</td></tr>
+				<tr><td><b>Способ доставки</b></td><td>{{ act.delivery_method|default:"—" }}</td></tr>
+				<tr><td><b>Склад</b></td><td>{{ act.warehouse }}</td></tr>
+			</tbody>
+		</table>
+
+		<h5 style="margin-top: 24px;">Материалы</h5>
+		<table class="highlight responsive-table">
+			<thead>
+				<tr>
+					<th>№</th>
+					<th>Товар</th>
+					<th>Ед. изм.</th>
+					<th class="right-align">Кол-во</th>
+					<th class="right-align">Цена</th>
+					<th class="right-align">Сумма</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in items %}
+				<tr>
+					<td>{{ forloop.counter }}</td>
+					<td>{{ item.product.name }}</td>
+					<td>{{ item.product.unit.name }}</td>
+					<td class="right-align">{{ item.quantity|floatformat:2 }}</td>
+					<td class="right-align">{{ item.price|floatformat:2 }}</td>
+					<td class="right-align">{{ item.total|floatformat:2 }}</td>
+				</tr>
+				{% empty %}
+				<tr>
+					<td colspan="6" class="center-align">Нет позиций</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="5" class="right-align"><b>Итого</b></td>
+					<td class="right-align"><b>{{ total_amount|default:0|floatformat:2 }}</b></td>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
+</div>
+
+<style>
+@media print {
+	body {
+		margin: 0;
+	}
+	.not-print {
+		display: none !important;
+	}
+	main.section {
+		margin: 0;
+		padding: 0;
+	}
+	main.section .container {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+	}
+	#act-print-area {
+		margin: 0;
+		box-shadow: none;
+		border: none;
+	}
+	#act-print-area .card-content {
+		padding-top: 8px;
+	}
+	#act-print-area table {
+		margin-top: 0;
+	}
+}
+</style>
+{% endblock %}

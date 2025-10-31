@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Журнал актов списания{% endblock %}
+
+{% block content %}
+<h4>Журнал актов списания</h4>
+<div class="right-align" style="margin-bottom: 20px;">
+	<a href="{% url 'act_spis:create' %}" class="btn waves-effect blue">
+		<i class="material-icons left">add</i>Добавить акт
+	</a>
+</div>
+
+<table class="highlight striped responsive-table">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Дата</th>
+			<th>Контрагент</th>
+			<th>Договор</th>
+			<th>Счёт</th>
+			<th>Способ доставки</th>
+			<th>Склад</th>
+			<th class="right-align">Сумма</th>
+			<th>Действия</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for act in acts %}
+		<tr>
+			<td>{{ act.id }}</td>
+			<td>{{ act.date|date:"d.m.Y" }}</td>
+			<td>{{ act.customer.name }}</td>
+			<td>{{ act.contract|default:"—" }}</td>
+			<td>{{ act.invoice|default:"—" }}</td>
+			<td>{{ act.delivery_method|default:"—" }}</td>
+			<td>{{ act.warehouse }}</td>
+			<td class="right-align">{{ act.total_amount|default:0|floatformat:2 }}</td>
+			<td>
+				<a href="{% url 'act_spis:view' act.pk %}" class="btn-small green" title="Просмотреть">
+					<i class="material-icons">visibility</i>
+				</a>
+				<a href="{% url 'act_spis:edit' act.pk %}" class="btn-small orange" title="Редактировать">
+					<i class="material-icons">edit</i>
+				</a>
+				<a href="{% url 'act_spis:delete' act.pk %}" class="btn-small red" onclick="return confirm('Удалить акт?');" title="Удалить">
+					<i class="material-icons">delete</i>
+				</a>
+			</td>
+		</tr>
+		{% empty %}
+		<tr>
+			<td colspan="9" class="center-align">Нет записей</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

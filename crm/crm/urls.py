@@ -27,5 +27,6 @@ urlpatterns = [
     path('positions/', include('positions.urls')),
     path('products/', include('products.urls')),
     path('proxies/', include('proxies.urls')),
+    path('act-spis/', include('act_spis.urls')),
     path('units/', include('units.urls')),
 ]

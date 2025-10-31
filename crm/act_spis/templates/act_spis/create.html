@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{% block title %}Создание акта списания{% endblock %}
+
+{% block content %}
+<div class="row valign-wrapper not-print">
+	<h4 class="col s10">Создание акта списания</h4>
+	<div class="col s2 right-align">
+		<button class="btn-floating z-depth-0 waves-effect waves-light" type="button" onclick="printActForm()">
+			<i class="material-icons green">print</i>
+		</button>
+	</div>
+</div>
+
+<form method="post" id="act-form">
+	{% csrf_token %}
+
+	<div class="row">
+		<div class="input-field col s4">
+			{{ form.date }}
+			<label class="active" for="{{ form.date.id_for_label }}">Дата</label>
+			{{ form.date.errors }}
+		</div>
+		<div class="input-field col s8">
+			{{ form.customer }}
+			<label for="{{ form.customer.id_for_label }}">Контрагент</label>
+			{{ form.customer.errors }}
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="input-field col s4">
+			{{ form.contract }}
+			<label for="{{ form.contract.id_for_label }}">Договор</label>
+			{{ form.contract.errors }}
+		</div>
+		<div class="input-field col s4">
+			{{ form.invoice }}
+			<label for="{{ form.invoice.id_for_label }}">Счёт на оплату</label>
+			{{ form.invoice.errors }}
+		</div>
+		<div class="input-field col s4">
+			{{ form.delivery_method }}
+			<label for="{{ form.delivery_method.id_for_label }}">Способ доставки</label>
+			{{ form.delivery_method.errors }}
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="input-field col s4">
+			{{ form.warehouse }}
+			<label for="{{ form.warehouse.id_for_label }}">Склад</label>
+			{{ form.warehouse.errors }}
+		</div>
+	</div>
+
+	<h5 class="not-print">Материалы</h5>
+
+	{{ formset.management_form }}
+	{{ formset.non_form_errors }}
+	<table class="highlight" id="items-table">
+		<thead>
+			<tr>
+				<th class="col-product">Товар</th>
+				<th class="col-quantity">Количество</th>
+				<th class="col-price">Цена</th>
+				<th class="col-sum right-align">Сумма</th>
+				<th class="col-actions not-print">Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for form in formset %}
+			<tr class="formset-row" data-existing="{% if form.instance.pk %}true{% else %}false{% endif %}">
+				<td class="col-product">
+					{{ form.product }}
+					{{ form.product.errors }}
+				</td>
+				<td class="col-quantity">
+					{{ form.quantity }}
+					{{ form.quantity.errors }}
+				</td>
+				<td class="col-price">
+					{{ form.price }}
+					{{ form.price.errors }}
+				</td>
+				<td class="col-sum right-align">
+					<span class="sum-display" data-value="{{ form.instance.total|default:0|floatformat:2 }}">{{ form.instance.total|default:0|floatformat:2 }}</span>
+				</td>
+				<td class="col-actions not-print">
+					<span class="delete-field">{{ form.DELETE }}</span>
+					{{ form.id }}
+					<button type="button" class="btn-small red lighten-1 remove-row" title="Удалить строку">
+						<i class="material-icons">delete</i>
+					</button>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="row not-print">
+		<div class="col s12 right-align">
+			<button type="button" class="btn green lighten-1" id="add-item-row">
+				<i class="material-icons left">add</i>Добавить строку
+			</button>
+		</div>
+	</div>
+
+	{% with empty_form=formset.empty_form %}
+	<template id="empty-form-template">
+		<tr class="formset-row" data-existing="false">
+			<td class="col-product">
+				{{ empty_form.product }}
+			</td>
+			<td class="col-quantity">
+				{{ empty_form.quantity }}
+			</td>
+			<td class="col-price">
+				{{ empty_form.price }}
+			</td>
+			<td class="col-sum right-align">
+				<span class="sum-display" data-value="0.00">0.00</span>
+			</td>
+			<td class="col-actions not-print">
+				<span class="delete-field">{{ empty_form.DELETE }}</span>
+				{{ empty_form.id }}
+				<button type="button" class="btn-small red lighten-1 remove-row" title="Удалить строку">
+					<i class="material-icons">delete</i>
+				</button>
+			</td>
+		</tr>
+	</template>
+	{% endwith %}
+
+	<div class="row">
+		<div class="col s12 right-align not-print">
+			<strong>Итого: <span id="act-total-sum">0.00</span></strong>
+		</div>
+	</div>
+
+	<div class="row not-print">
+		<div class="col s12 right-align">
+			<button class="btn waves-effect blue" type="submit">
+				<i class="material-icons left">save</i>Сохранить
+			</button>
+			<a href="{% url 'act_spis:list' %}" class="btn grey">
+				<i class="material-icons left">cancel</i>Отмена
+			</a>
+		</div>
+	</div>
+</form>
+
+<div id="print-preview" class="print-only" style="display: none;">
+	<h4>Акт списания материальных ценностей</h4>
+	<table class="highlight">
+		<tr><td><b>Номер</b></td><td id="print-id">—</td></tr>
+		<tr><td><b>Дата</b></td><td id="print-date"></td></tr>
+		<tr><td><b>Контрагент</b></td><td id="print-customer"></td></tr>
+		<tr><td><b>Договор</b></td><td id="print-contract"></td></tr>
+		<tr><td><b>Счёт на оплату</b></td><td id="print-invoice"></td></tr>
+		<tr><td><b>Способ доставки</b></td><td id="print-delivery"></td></tr>
+		<tr><td><b>Склад</b></td><td id="print-warehouse"></td></tr>
+	</table>
+
+	<h5 style="margin-top: 20px;">Материалы</h5>
+	<table class="highlight" id="print-items">
+		<thead>
+			<tr>
+				<th>№</th>
+				<th>Товар</th>
+				<th>Количество</th>
+				<th>Цена</th>
+				<th>Сумма</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+		<tfoot>
+			<tr>
+				<td colspan="4" class="right-align"><b>Итого</b></td>
+				<td id="print-total" class="right-align"></td>
+			</tr>
+		</tfoot>
+	</table>
+</div>
+
+<script>
+function resolveElement(ref) {
+	if (!ref) {
+		return null;
+	}
+	if (typeof ref === 'string') {
+		return document.querySelector(ref);
+	}
+	return ref;
+}
+
+function parseDecimal(value) {
+	if (!value) {
+		return 0;
+	}
+	const normalized = value.toString().replace(',', '.');
+	const parsed = parseFloat(normalized);
+	return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getMaterializeSelectValue(ref) {
+	const element = resolveElement(ref);
+	if (!element) {
+		return '';
+	}
+	const instance = window.M && M.FormSelect ? M.FormSelect.getInstance(element) : null;
+	if (instance) {
+		const selectedValues = instance.getSelectedValues();
+		if (selectedValues.length) {
+			const labels = selectedValues.map(function(value) {
+				const option = Array.from(element.options).find(function(opt) {
+					return opt.value === value;
+				});
+				return option ? option.textContent.trim() : value;
+			});
+			return labels.join(', ');
+		}
+	}
+	const options = element.selectedOptions || [];
+	if (options.length) {
+		return Array.from(options).map(function(opt) {
+			return opt.textContent.trim();
+		}).join(', ');
+	}
+	const selected = element.options[element.selectedIndex];
+	return selected ? selected.textContent.trim() : '';
+}
+
+function getInputValue(ref) {
+	const element = resolveElement(ref);
+	return element ? element.value : '';
+}
+
+function formatCurrency(value) {
+	return value.toFixed(2);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+	if (window.M && M.FormSelect) {
+		M.FormSelect.init(document.querySelectorAll('select'));
+	}
+
+	const prefix = '{{ formset.prefix }}';
+	const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+	const addRowButton = document.getElementById('add-item-row');
+	const tableBody = document.querySelector('#items-table tbody');
+	const emptyFormTemplate = document.getElementById('empty-form-template');
+	const totalSumDisplay = document.getElementById('act-total-sum');
+
+	function initMaterializeForRow(row) {
+		if (window.M && M.FormSelect) {
+			const selects = row.querySelectorAll('select');
+			if (selects.length) {
+				M.FormSelect.init(selects);
+			}
+		}
+	}
+
+	function updateRowSum(row) {
+		const quantityInput = row.querySelector('input[name$="-quantity"]');
+		const priceInput = row.querySelector('input[name$="-price"]');
+		const sumDisplay = row.querySelector('.sum-display');
+		if (!sumDisplay) {
+			return;
+		}
+		const quantity = parseDecimal(quantityInput ? quantityInput.value : 0);
+		const price = parseDecimal(priceInput ? priceInput.value : 0);
+		const sum = quantity * price;
+		sumDisplay.dataset.value = formatCurrency(sum);
+		sumDisplay.textContent = formatCurrency(sum);
+		updateTotalSum();
+	}
+
+	function updateTotalSum() {
+		if (!totalSumDisplay) {
+			return;
+		}
+		let total = 0;
+		tableBody.querySelectorAll('.formset-row').forEach(function(row) {
+			if (row.classList.contains('marked-for-removal')) {
+				return;
+			}
+			const sumDisplay = row.querySelector('.sum-display');
+			if (sumDisplay) {
+				total += parseDecimal(sumDisplay.dataset.value);
+			}
+		});
+		totalSumDisplay.textContent = formatCurrency(total);
+	}
+
+	function markRowForDeletion(row, deleteInput) {
+		if (deleteInput) {
+			deleteInput.checked = true;
+		}
+		row.classList.add('marked-for-removal');
+		row.style.display = 'none';
+		updateTotalSum();
+	}
+
+	function hookRow(row) {
+		const deleteInput = row.querySelector('.delete-field input');
+		const removeButton = row.querySelector('.remove-row');
+		const quantityInput = row.querySelector('input[name$="-quantity"]');
+		const priceInput = row.querySelector('input[name$="-price"]');
+
+		if (removeButton) {
+			removeButton.addEventListener('click', function() {
+				markRowForDeletion(row, deleteInput);
+			});
+		}
+
+		[quantityInput, priceInput].forEach(function(input) {
+			if (input) {
+				input.addEventListener('input', function() {
+					updateRowSum(row);
+				});
+			}
+		});
+
+		initMaterializeForRow(row);
+		updateRowSum(row);
+	}
+
+	if (tableBody) {
+		tableBody.querySelectorAll('.formset-row').forEach(hookRow);
+	}
+
+	if (addRowButton && emptyFormTemplate && totalFormsInput && tableBody) {
+		addRowButton.addEventListener('click', function() {
+			const formIndex = parseInt(totalFormsInput.value, 10);
+			const newRowHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, formIndex);
+			const wrapper = document.createElement('tbody');
+			wrapper.innerHTML = newRowHtml.trim();
+			const newRow = wrapper.firstElementChild;
+			tableBody.appendChild(newRow);
+			totalFormsInput.value = formIndex + 1;
+			hookRow(newRow);
+		});
+	}
+
+	updateTotalSum();
+});
+
+function printActForm() {
+	document.getElementById('print-id').textContent = '—';
+	document.getElementById('print-date').textContent = getInputValue('#id_date') ? new Date(getInputValue('#id_date')).toLocaleDateString('ru-RU') : '';
+	document.getElementById('print-customer').textContent = getMaterializeSelectValue('#id_customer');
+	document.getElementById('print-contract').textContent = getInputValue('#id_contract');
+	document.getElementById('print-invoice').textContent = getInputValue('#id_invoice');
+	document.getElementById('print-delivery').textContent = getInputValue('#id_delivery_method');
+	document.getElementById('print-warehouse').textContent = getInputValue('#id_warehouse');
+
+	const printTableBody = document.getElementById('print-items').querySelector('tbody');
+	printTableBody.innerHTML = '';
+
+	let visibleIndex = 0;
+	let total = 0;
+	const rows = document.querySelectorAll('#items-table .formset-row');
+	rows.forEach(function(row) {
+		if (row.classList.contains('marked-for-removal')) {
+			return;
+		}
+		const productSelect = row.querySelector('select[name$="-product"]');
+		const quantityInput = row.querySelector('input[name$="-quantity"]');
+		const priceInput = row.querySelector('input[name$="-price"]');
+		const sumDisplay = row.querySelector('.sum-display');
+
+		const productName = getMaterializeSelectValue(productSelect);
+		const quantity = getInputValue(quantityInput);
+		const price = getInputValue(priceInput);
+		const sum = sumDisplay ? sumDisplay.textContent : '0.00';
+
+		if (productName) {
+			visibleIndex += 1;
+			const tr = document.createElement('tr');
+			tr.innerHTML = '<td>' + visibleIndex + '</td>' +
+				'<td>' + productName + '</td>' +
+				'<td>' + quantity + '</td>' +
+				'<td>' + price + '</td>' +
+				'<td>' + sum + '</td>';
+			printTableBody.appendChild(tr);
+			total += parseDecimal(sum);
+		}
+	});
+
+	document.getElementById('print-total').textContent = formatCurrency(total);
+
+	const printPreview = document.getElementById('print-preview');
+	const originalDisplay = printPreview.style.display;
+	printPreview.style.display = 'block';
+	window.print();
+	printPreview.style.display = originalDisplay;
+}
+</script>
+
+<style>
+#items-table .col-product {
+	width: 40%;
+}
+
+#items-table .col-quantity,
+#items-table .col-price {
+	width: 15%;
+}
+
+#items-table .col-sum {
+	width: 20%;
+}
+
+#items-table .col-actions {
+	width: 10%;
+	text-align: right;
+	white-space: nowrap;
+}
+
+#items-table .col-actions .remove-row {
+	margin-left: 8px;
+}
+
+.delete-field {
+	display: none;
+}
+
+.marked-for-removal {
+	display: none !important;
+}
+
+@media print {
+	body * {
+		visibility: hidden;
+	}
+	.print-only, .print-only * {
+		visibility: visible;
+	}
+	.print-only {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+	}
+}
+
+.not-print {
+	display: block;
+}
+
+@media print {
+	.not-print {
+		display: none;
+	}
+}
+</style>
+{% endblock %}

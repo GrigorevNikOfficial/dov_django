@@ -1,0 +1,74 @@
+from decimal import Decimal, ROUND_HALF_UP
+
+from django.core.validators import MinValueValidator
+from django.db import models
+
+
+class ActSpis(models.Model):
+	date = models.DateField("Дата")
+	customer = models.ForeignKey(
+		'customers.Customer',
+		on_delete=models.PROTECT,
+		verbose_name="Контрагент",
+		related_name='write_off_acts',
+	)
+	contract = models.CharField("Договор", max_length=255, blank=True)
+	invoice = models.CharField("Счёт на оплату", max_length=255, blank=True)
+	delivery_method = models.CharField("Способ доставки", max_length=255, blank=True)
+	warehouse = models.CharField("Склад", max_length=255)
+
+	class Meta:
+		verbose_name = "Акт списания материальных ценностей"
+		verbose_name_plural = "Акты списания материальных ценностей"
+		ordering = ['-date', '-id']
+
+	def __str__(self):
+		return f"Акт списания № {self.id}"
+
+
+class ActSpisItem(models.Model):
+	act = models.ForeignKey(
+		'act_spis.ActSpis',
+		on_delete=models.CASCADE,
+		verbose_name="Акт списания",
+		related_name='items',
+	)
+	product = models.ForeignKey(
+		'products.Product',
+		on_delete=models.PROTECT,
+		verbose_name="Товар",
+	)
+	quantity = models.DecimalField(
+		"Количество",
+		max_digits=10,
+		decimal_places=2,
+		validators=[MinValueValidator(Decimal('0.01'))],
+	)
+	price = models.DecimalField(
+		"Цена",
+		max_digits=12,
+		decimal_places=2,
+		validators=[MinValueValidator(Decimal('0.00'))],
+	)
+	total = models.DecimalField(
+		"Сумма",
+		max_digits=12,
+		decimal_places=2,
+		editable=False,
+		default=Decimal('0.00'),
+	)
+
+	class Meta:
+		verbose_name = "Позиция акта списания"
+		verbose_name_plural = "Позиции акта списания"
+		ordering = ['id']
+
+	def __str__(self):
+		return f"{self.product} ({self.quantity} × {self.price})"
+
+	def save(self, *args, **kwargs):
+		if self.quantity is not None and self.price is not None:
+			self.total = (self.quantity * self.price).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+		else:
+			self.total = Decimal('0.00')
+		super().save(*args, **kwargs)

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Удаление акта списания{% endblock %}
+
+{% block content %}
+<h4>Удалить акт списания № {{ object.id }}?</h4>
+<p>Это действие нельзя отменить. Подтвердите удаление документа и связанных позиций.</p>
+<form method="post">
+	{% csrf_token %}
+	<button type="submit" class="btn red waves-effect">
+		<i class="material-icons left">delete</i>Удалить
+	</button>
+	<a href="{% url 'act_spis:list' %}" class="btn grey">
+		<i class="material-icons left">cancel</i>Отмена
+	</a>
+</form>
+{% endblock %}

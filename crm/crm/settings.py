@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'positions',
     'products',
     'proxies',
+    'act_spis',
     'units',
 ]
 
