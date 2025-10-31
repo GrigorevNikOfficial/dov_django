@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Журнал актов списания{% endblock %}
+{% block title %}Журнал актов списания материальных ценностей{% endblock %}
 
 {% block content %}
-<h4>Журнал актов списания</h4>
+<h4>Журнал актов списания материальных ценностей</h4>
 <div class="right-align" style="margin-bottom: 20px;">
 	<a href="{% url 'act_spis:create' %}" class="btn waves-effect blue">
 		<i class="material-icons left">add</i>Добавить акт
@@ -16,9 +16,8 @@
 			<th>Дата</th>
 			<th>Контрагент</th>
 			<th>Договор</th>
-			<th>Счёт</th>
-			<th>Способ доставки</th>
 			<th>Склад</th>
+			<th>Должность</th>
 			<th class="right-align">Сумма</th>
 			<th>Действия</th>
 		</tr>
@@ -30,9 +29,8 @@
 			<td>{{ act.date|date:"d.m.Y" }}</td>
 			<td>{{ act.customer.name }}</td>
 			<td>{{ act.contract|default:"—" }}</td>
-			<td>{{ act.invoice|default:"—" }}</td>
-			<td>{{ act.delivery_method|default:"—" }}</td>
 			<td>{{ act.warehouse }}</td>
+			<td>{{ act.chairperson.position.name|default:"—" }}</td>
 			<td class="right-align">{{ act.total_amount|default:0|floatformat:2 }}</td>
 			<td>
 				<a href="{% url 'act_spis:view' act.pk %}" class="btn-small green" title="Просмотреть">

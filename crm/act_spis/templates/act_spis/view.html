@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Акт списания № {{ act.id }}{% endblock %}
+{% block title %}Акт списания материальных ценностей № {{ act.id }}{% endblock %}
 
 {% block content %}
 <div class="row valign-wrapper not-print">
-	<h4 class="col s8">Акт списания № {{ act.id }}</h4>
+	<h4 class="col s8">Акт списания материальных ценностей № {{ act.id }}</h4>
 	<div class="col s4 right-align">
 		<a href="{% url 'act_spis:edit' act.id %}" class="btn orange">
 			<i class="material-icons left">edit</i>Редактировать
@@ -19,20 +19,20 @@
 
 <div class="card" id="act-print-area">
 	<div class="card-content">
-		<table class="striped">
+		<h5 class="print-title">Акт списания материальных ценностей № {{ act.id }}</h5>
+		<table class="striped compact-table">
 			<tbody>
 				<tr><td><b>Номер</b></td><td>{{ act.id }}</td></tr>
 				<tr><td><b>Дата</b></td><td>{{ act.date|date:"d.m.Y" }}</td></tr>
 				<tr><td><b>Контрагент</b></td><td>{{ act.customer.name }}</td></tr>
 				<tr><td><b>Договор</b></td><td>{{ act.contract|default:"—" }}</td></tr>
-				<tr><td><b>Счёт на оплату</b></td><td>{{ act.invoice|default:"—" }}</td></tr>
-				<tr><td><b>Способ доставки</b></td><td>{{ act.delivery_method|default:"—" }}</td></tr>
 				<tr><td><b>Склад</b></td><td>{{ act.warehouse }}</td></tr>
+				<tr><td><b>Должность</b></td><td>{{ act.chairperson.position.name|default:"—" }}</td></tr>
 			</tbody>
 		</table>
 
-		<h5 style="margin-top: 24px;">Материалы</h5>
-		<table class="highlight responsive-table">
+	<h5 class="print-subtitle">Материалы</h5>
+	<table class="highlight responsive-table compact-table">
 			<thead>
 				<tr>
 					<th>№</th>
@@ -48,7 +48,7 @@
 				<tr>
 					<td>{{ forloop.counter }}</td>
 					<td>{{ item.product.name }}</td>
-					<td>{{ item.product.unit.name }}</td>
+					<td>{{ item.unit_name|default:item.product.unit.name }}</td>
 					<td class="right-align">{{ item.quantity|floatformat:2 }}</td>
 					<td class="right-align">{{ item.price|floatformat:2 }}</td>
 					<td class="right-align">{{ item.total|floatformat:2 }}</td>
@@ -70,6 +70,23 @@
 </div>
 
 <style>
+.print-title {
+	margin-bottom: 16px;
+}
+
+.print-subtitle {
+	margin: 16px 0 8px 0;
+}
+
+.compact-table {
+	margin-top: 0;
+}
+
+.compact-table td,
+.compact-table th {
+	padding: 6px 8px;
+}
+
 @media print {
 	body {
 		margin: 0;
@@ -92,7 +109,7 @@
 		border: none;
 	}
 	#act-print-area .card-content {
-		padding-top: 8px;
+		padding: 16px 12px;
 	}
 	#act-print-area table {
 		margin-top: 0;

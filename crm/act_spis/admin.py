@@ -10,7 +10,18 @@ class ActSpisItemInline(admin.TabularInline):
 
 @admin.register(ActSpis)
 class ActSpisAdmin(admin.ModelAdmin):
-	list_display = ('id', 'date', 'customer', 'contract', 'invoice', 'delivery_method', 'warehouse')
+	def chairperson_position(self, obj):
+		return obj.chairperson.position.name if obj.chairperson and obj.chairperson.position else ''
+	chairperson_position.short_description = 'Должность'
+
+	list_display = (
+		'id',
+		'date',
+		'customer',
+		'contract',
+		'warehouse',
+		'chairperson_position',
+	)
 	list_filter = ('date', 'customer')
-	search_fields = ('id', 'contract', 'invoice', 'warehouse')
+	search_fields = ('id', 'contract', 'warehouse')
 	inlines = [ActSpisItemInline]

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Редактирование акта списания{% endblock %}
+{% block title %}Изменение акта списания материальных ценностей{% endblock %}
 
 {% block content %}
 <div class="row valign-wrapper not-print">
-	<h4 class="col s10">Редактирование акта списания № {{ object.id }}</h4>
+	<h4 class="col s10">Изменение акта списания материальных ценностей № {{ object.id }}</h4>
 	<div class="col s2 right-align">
 		<button class="btn-floating z-depth-0 waves-effect waves-light" type="button" onclick="printActForm()">
 			<i class="material-icons green">print</i>
@@ -34,22 +34,18 @@
 			{{ form.contract.errors }}
 		</div>
 		<div class="input-field col s4">
-			{{ form.invoice }}
-			<label for="{{ form.invoice.id_for_label }}">Счёт на оплату</label>
-			{{ form.invoice.errors }}
-		</div>
-		<div class="input-field col s4">
-			{{ form.delivery_method }}
-			<label for="{{ form.delivery_method.id_for_label }}">Способ доставки</label>
-			{{ form.delivery_method.errors }}
+			{{ form.warehouse }}
+			<label for="{{ form.warehouse.id_for_label }}">Склад</label>
+			{{ form.warehouse.errors }}
 		</div>
 	</div>
 
 	<div class="row">
-		<div class="input-field col s4">
-			{{ form.warehouse }}
-			<label for="{{ form.warehouse.id_for_label }}">Склад</label>
-			{{ form.warehouse.errors }}
+		<div class="input-field col s6">
+			{{ form.chairperson }}
+			<label for="{{ form.chairperson.id_for_label }}">Председатель комиссии</label>
+			{{ form.chairperson.errors }}
+			<div class="chairperson-position-info grey-text" id="chairperson-position-display">Должность: —</div>
 		</div>
 	</div>
 
@@ -61,6 +57,7 @@
 		<thead>
 			<tr>
 				<th class="col-product">Товар</th>
+				<th class="col-unit">Ед. изм.</th>
 				<th class="col-quantity">Количество</th>
 				<th class="col-price">Цена</th>
 				<th class="col-sum right-align">Сумма</th>
@@ -73,6 +70,9 @@
 				<td class="col-product">
 					{{ form.product }}
 					{{ form.product.errors }}
+				</td>
+				<td class="col-unit">
+					<span class="unit-display" data-value="{{ form.instance.unit_name|default_if_none:'' }}">{{ form.instance.unit_name|default_if_none:'' }}</span>
 				</td>
 				<td class="col-quantity">
 					{{ form.quantity }}
@@ -110,6 +110,9 @@
 		<tr class="formset-row" data-existing="false">
 			<td class="col-product">
 				{{ empty_form.product }}
+			</td>
+			<td class="col-unit">
+				<span class="unit-display" data-value=""></span>
 			</td>
 			<td class="col-quantity">
 				{{ empty_form.quantity }}
@@ -150,23 +153,23 @@
 </form>
 
 <div id="print-preview" class="print-only" style="display: none;">
-	<h4>Акт списания материальных ценностей</h4>
-	<table class="highlight">
+	<h4 class="print-title">Акт списания материальных ценностей № <span id="print-title-number">{{ object.id }}</span></h4>
+	<table class="highlight compact-table">
 		<tr><td><b>Номер</b></td><td id="print-id">{{ object.id }}</td></tr>
 		<tr><td><b>Дата</b></td><td id="print-date"></td></tr>
 		<tr><td><b>Контрагент</b></td><td id="print-customer"></td></tr>
 		<tr><td><b>Договор</b></td><td id="print-contract"></td></tr>
-		<tr><td><b>Счёт на оплату</b></td><td id="print-invoice"></td></tr>
-		<tr><td><b>Способ доставки</b></td><td id="print-delivery"></td></tr>
 		<tr><td><b>Склад</b></td><td id="print-warehouse"></td></tr>
+		<tr><td><b>Должность</b></td><td id="print-position"></td></tr>
 	</table>
 
-	<h5 style="margin-top: 20px;">Материалы</h5>
-	<table class="highlight" id="print-items">
+	<h5 class="print-subtitle">Материалы</h5>
+	<table class="highlight compact-table" id="print-items">
 		<thead>
 			<tr>
 				<th>№</th>
 				<th>Товар</th>
+				<th>Ед. изм.</th>
 				<th>Количество</th>
 				<th>Цена</th>
 				<th>Сумма</th>
@@ -239,6 +242,9 @@ function formatCurrency(value) {
 	return value.toFixed(2);
 }
 
+const PRODUCT_UNITS = JSON.parse('{{ product_units_json|escapejs }}');
+const EMPLOYEE_POSITIONS = JSON.parse('{{ employee_positions_json|escapejs }}');
+window.EMPLOYEE_POSITIONS = EMPLOYEE_POSITIONS;
 const CURRENT_ACT_ID = '{{ object.id }}';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -252,6 +258,21 @@ document.addEventListener('DOMContentLoaded', function() {
 	const tableBody = document.querySelector('#items-table tbody');
 	const emptyFormTemplate = document.getElementById('empty-form-template');
 	const totalSumDisplay = document.getElementById('act-total-sum');
+	const chairpersonSelect = document.getElementById('id_chairperson');
+	const chairpersonPositionDisplay = document.getElementById('chairperson-position-display');
+
+	function updateChairpersonPosition() {
+		if (!chairpersonPositionDisplay) {
+			return;
+		}
+		const chairpersonId = chairpersonSelect ? chairpersonSelect.value : '';
+		const positionLabel = EMPLOYEE_POSITIONS[chairpersonId] || '—';
+		chairpersonPositionDisplay.textContent = 'Должность: ' + (positionLabel || '—');
+	}
+
+	if (chairpersonSelect) {
+		chairpersonSelect.addEventListener('change', updateChairpersonPosition);
+	}
 
 	function initMaterializeForRow(row) {
 		if (window.M && M.FormSelect) {
@@ -294,6 +315,18 @@ document.addEventListener('DOMContentLoaded', function() {
 		totalSumDisplay.textContent = formatCurrency(total);
 	}
 
+	function updateRowUnit(row) {
+		const productSelect = row.querySelector('select[name$="-product"]');
+		const unitDisplay = row.querySelector('.unit-display');
+		if (!unitDisplay) {
+			return;
+		}
+		const productId = productSelect ? productSelect.value : '';
+		const unitLabel = PRODUCT_UNITS[productId] || '';
+		unitDisplay.dataset.value = unitLabel;
+		unitDisplay.textContent = unitLabel;
+	}
+
 	function markRowForDeletion(row, deleteInput) {
 		if (deleteInput) {
 			deleteInput.checked = true;
@@ -308,10 +341,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		const removeButton = row.querySelector('.remove-row');
 		const quantityInput = row.querySelector('input[name$="-quantity"]');
 		const priceInput = row.querySelector('input[name$="-price"]');
+		const productSelect = row.querySelector('select[name$="-product"]');
 
 		if (removeButton) {
 			removeButton.addEventListener('click', function() {
 				markRowForDeletion(row, deleteInput);
+			});
+		}
+
+		if (productSelect) {
+			productSelect.addEventListener('change', function() {
+				updateRowUnit(row);
 			});
 		}
 
@@ -325,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		initMaterializeForRow(row);
 		updateRowSum(row);
+		updateRowUnit(row);
 	}
 
 	if (tableBody) {
@@ -345,16 +386,24 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	updateTotalSum();
+	updateChairpersonPosition();
 });
 
 function printActForm() {
-	document.getElementById('print-id').textContent = CURRENT_ACT_ID || '—';
+	const idValue = CURRENT_ACT_ID || '—';
+	document.getElementById('print-id').textContent = idValue;
+	const printTitleNumber = document.getElementById('print-title-number');
+	if (printTitleNumber) {
+		printTitleNumber.textContent = idValue;
+	}
 	document.getElementById('print-date').textContent = getInputValue('#id_date') ? new Date(getInputValue('#id_date')).toLocaleDateString('ru-RU') : '';
 	document.getElementById('print-customer').textContent = getMaterializeSelectValue('#id_customer');
 	document.getElementById('print-contract').textContent = getInputValue('#id_contract');
-	document.getElementById('print-invoice').textContent = getInputValue('#id_invoice');
-	document.getElementById('print-delivery').textContent = getInputValue('#id_delivery_method');
 	document.getElementById('print-warehouse').textContent = getInputValue('#id_warehouse');
+	// show position of selected chairperson
+	const chairpersonId = (document.querySelector('#id_chairperson') || {}).value || '';
+	const positionLabel = (window.EMPLOYEE_POSITIONS && window.EMPLOYEE_POSITIONS[chairpersonId]) || '';
+	document.getElementById('print-position').textContent = positionLabel;
 
 	const printTableBody = document.getElementById('print-items').querySelector('tbody');
 	printTableBody.innerHTML = '';
@@ -370,17 +419,20 @@ function printActForm() {
 		const quantityInput = row.querySelector('input[name$="-quantity"]');
 		const priceInput = row.querySelector('input[name$="-price"]');
 		const sumDisplay = row.querySelector('.sum-display');
+		const unitDisplay = row.querySelector('.unit-display');
 
 		const productName = getMaterializeSelectValue(productSelect);
 		const quantity = getInputValue(quantityInput);
 		const price = getInputValue(priceInput);
 		const sum = sumDisplay ? sumDisplay.textContent : '0.00';
+		const unitLabel = unitDisplay ? unitDisplay.textContent : '';
 
 		if (productName) {
 			visibleIndex += 1;
 			const tr = document.createElement('tr');
 			tr.innerHTML = '<td>' + visibleIndex + '</td>' +
 				'<td>' + productName + '</td>' +
+				'<td>' + unitLabel + '</td>' +
 				'<td>' + quantity + '</td>' +
 				'<td>' + price + '</td>' +
 				'<td>' + sum + '</td>';
@@ -402,6 +454,10 @@ function printActForm() {
 <style>
 #items-table .col-product {
 	width: 40%;
+}
+
+#items-table .col-unit {
+	width: 10%;
 }
 
 #items-table .col-quantity,
@@ -444,6 +500,23 @@ function printActForm() {
 		top: 0;
 		width: 100%;
 	}
+}
+
+.print-title {
+	margin-bottom: 16px;
+}
+
+.print-subtitle {
+	margin: 16px 0 8px 0;
+}
+
+.compact-table {
+	margin-top: 0;
+}
+
+.compact-table td,
+.compact-table th {
+	padding: 6px 8px;
 }
 
 .not-print {

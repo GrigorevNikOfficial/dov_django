@@ -7,13 +7,12 @@ from .models import ActSpis, ActSpisItem
 class ActSpisForm(forms.ModelForm):
     class Meta:
         model = ActSpis
-        fields = ['date', 'customer', 'contract', 'invoice', 'delivery_method', 'warehouse']
+        fields = ['date', 'customer', 'contract', 'warehouse', 'chairperson']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'contract': forms.TextInput(attrs={'maxlength': 255}),
-            'invoice': forms.TextInput(attrs={'maxlength': 255}),
-            'delivery_method': forms.TextInput(attrs={'maxlength': 255}),
             'warehouse': forms.TextInput(attrs={'maxlength': 255}),
+            # chairperson is a select; widget left default
         }
 
 
