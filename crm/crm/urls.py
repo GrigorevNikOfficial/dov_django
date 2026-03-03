@@ -26,6 +26,8 @@ urlpatterns = [
     path('organizations/', include('organizations.urls')),
     path('positions/', include('positions.urls')),
     path('products/', include('products.urls')),
-    path('proxies/', include('proxies.urls')),
+    path('payment-orders/', include('payment_orders.urls')),
+    path('reconciliation-acts/', include('reconciliation_acts.urls')),
+    path('service-acts/', include('service_acts.urls')),
     path('units/', include('units.urls')),
 ]

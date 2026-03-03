@@ -1,23 +1,32 @@
 <!-- accounts/templates/accounts/edit.html -->
-{% extends 'base.html' %}
-{% block title %}Редактировать счёт{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Редактировать счёт{% endblock %} {% block content %}
 <h4>Редактировать счёт</h4>
 <form method="post">
-	{% csrf_token %}
-	<div class="input-field">
-		{{ form.account }}
-		<label class="active" for="{{ form.account.id_for_label }}">Номер счёта</label>
-	</div>
-	<div class="input-field">
-		{{ form.bank_name }}
-		<label class="active" for="{{ form.bank_name.id_for_label }}">Банк</label>
-	</div>
-		<div class="input-field">
-			{{ form.bank_identification_number }}
-			<label class="active" for="{{ form.bank_identification_number.id_for_label }}">БИК</label>
-	</div>
-	<button class="btn blue">Сохранить</button>
+  {% csrf_token %}
+  <div class="input-field">
+    {{ form.account }}
+    <label class="active" for="{{ form.account.id_for_label }}"
+      >Номер счёта</label
+    >
+  </div>
+  <div class="input-field">
+    {{ form.bank_name }}
+    <label class="active" for="{{ form.bank_name.id_for_label }}">Банк</label>
+  </div>
+  <div class="input-field">
+    {{ form.bank_identification_number }}
+    <label
+      class="active"
+      for="{{ form.bank_identification_number.id_for_label }}"
+      >БИК</label
+    >
+  </div>
+  <div class="input-field">
+    {{ form.correspondent_account }}
+    <label class="active" for="{{ form.correspondent_account.id_for_label }}"
+      >Корреспондентский счёт</label
+    >
+  </div>
+  <button class="btn">Сохранить</button>
 </form>
 {% endblock %}

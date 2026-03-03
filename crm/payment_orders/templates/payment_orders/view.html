@@ -1,0 +1,352 @@
+{% extends 'base.html' %} {% block title %}Платёжное поручение №
+{{payment_order.number }}{% endblock %} {% block content %}
+<div class="row not-print" style="margin-bottom: 20px">
+  <div class="col s12 right-align">
+    <a
+      href="{% url 'payment_orders:edit' payment_order.pk %}"
+      class="btn orange"
+    >
+      <i class="material-icons left">edit</i>Редактировать
+    </a>
+    <a href="{% url 'payment_orders:list' %}" class="btn grey">
+      <i class="material-icons left">arrow_back</i>К списку
+    </a>
+    <button class="btn green" onclick="window.print()">
+      <i class="material-icons left">print</i>Печать
+    </button>
+  </div>
+</div>
+
+<div class="payment-order-sheet" id="print-area">
+  <div class="sheet-top-line">
+    <div class="caption">Поступ. в банк плат.</div>
+    <div class="caption">Списано со сч. плат.</div>
+    <div class="form-codes">
+      <div class="form-number">0101060</div>
+      <div class="form-kind">08</div>
+    </div>
+  </div>
+
+  <div class="sheet-title">
+    <div class="title-text">
+      ПЛАТЕЖНОЕ ПОРУЧЕНИЕ № {{ payment_order.number }}
+    </div>
+    <div class="title-meta">
+      <div class="meta-cell">
+        <span class="meta-label">Дата</span>
+        <span class="meta-value">{{ payment_order.date|date:"d.m.Y" }}</span>
+      </div>
+      <div class="meta-cell">
+        <span class="meta-label">Вид платежа</span>
+        <span class="meta-value"
+          >{{ payment_order.payment_kind|default:"" }}</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="amount-line">
+    <div class="amount-label">Сумма прописью</div>
+    <div class="amount-value">
+      {{ payment_order.amount_text|default:payment_order.amount }}
+    </div>
+  </div>
+
+  <table class="order-table">
+    {% with payer_acc=payment_order.payer_account|default:payment_order.organization.account %}
+      <tr>
+        <td class="label-cell">ИНН</td>
+        <td class="value-cell">{{ payment_order.organization.inn|default:"—" }}</td>
+        <td class="label-cell">КПП</td>
+        <td class="value-cell">{{ payment_order.organization.kpp|default:"—" }}</td>
+        <td class="label-cell">Сумма</td>
+        <td class="value-cell">{{ payment_order.amount|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td class="label-cell text-left" colspan="4">
+          {{ payment_order.organization.name }}
+        </td>
+        <td class="label-cell">Сч. №</td>
+        <td class="value-cell">
+          {% if payer_acc %} {{ payer_acc.account }} {% else %} — {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td class="label-cell">Плательщик</td>
+        <td class="value-cell" colspan="3">
+          {{ payment_order.organization.name }}
+        </td>
+        <td class="label-cell">БИК</td>
+        <td class="value-cell">
+          {% if payer_acc %} {{ payer_acc.bank_identification_number }} {% else %} — {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td class="label-cell">Банк плательщика</td>
+        <td class="value-cell" colspan="3">
+          {% if payer_acc %} {{ payer_acc.bank_name }} {% else %} — {% endif %}
+        </td>
+        <td class="label-cell">Сч. №</td>
+        <td class="value-cell">
+          {% if payer_acc and payer_acc.correspondent_account %} {{ payer_acc.correspondent_account }} {% else %} — {% endif %}
+        </td>
+      </tr>
+    {% endwith %}
+    {% with recipient_acc=payment_order.recipient_account|default:payment_order.recipient.account %}
+      <tr>
+        <td class="label-cell">ИНН</td>
+        <td class="value-cell">{{ payment_order.recipient.inn|default:"—" }}</td>
+        <td class="label-cell">КПП</td>
+        <td class="value-cell">{{ payment_order.recipient.kpp|default:"—" }}</td>
+        <td class="label-cell">Сч. №</td>
+        <td class="value-cell">
+          {% if recipient_acc %} {{ recipient_acc.account }} {% else %} — {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td class="label-cell">Банк получателя</td>
+        <td class="value-cell" colspan="3">
+          {% if recipient_acc %} {{ recipient_acc.bank_name }} {% else %} — {% endif %}
+        </td>
+        <td class="label-cell">БИК</td>
+        <td class="value-cell">
+          {% if recipient_acc %} {{ recipient_acc.bank_identification_number }} {% else %} — {% endif %}
+        </td>
+      </tr>
+    {% endwith %}
+    <tr>
+      <td class="label-cell">Получатель</td>
+      <td class="value-cell" colspan="5">{{ payment_order.recipient.name }}</td>
+    </tr>
+  </table>
+
+  <table class="code-table wide">
+    <tr>
+      <td class="label-cell">КБК</td>
+      <td class="value-cell">{{ payment_order.kbk|default:"0" }}</td>
+      <td class="label-cell">ОКТМО</td>
+      <td class="value-cell">{{ payment_order.oktmo|default:"0" }}</td>
+      <td class="label-cell">Основание платежа</td>
+      <td class="value-cell">{{ payment_order.payment_basis|default:"0" }}</td>
+      <td class="label-cell">Налоговый период</td>
+      <td class="value-cell">{{ payment_order.tax_period|default:"0" }}</td>
+      <td class="label-cell">№ документа</td>
+      <td class="value-cell">{{ payment_order.doc_number|default:"0" }}</td>
+      <td class="label-cell">Дата документа</td>
+      <td class="value-cell">
+        {{ payment_order.doc_date|date:"d.m.Y"|default:"0" }}
+      </td>
+    </tr>
+  </table>
+
+  <table class="code-table narrow">
+    <tr>
+      <td class="label-cell">Вид оп.</td>
+      <td class="value-cell">
+        {{ payment_order.payment_operation_type|default:"01" }}
+      </td>
+      <td class="label-cell">Срок плат.</td>
+      <td class="value-cell">
+        {{ payment_order.payment_due_date|default:"" }}
+      </td>
+      <td class="label-cell">Наз. пл.</td>
+      <td class="value-cell">
+        {{ payment_order.payment_assignment_code|default:"" }}
+      </td>
+      <td class="label-cell">Очер. плат.</td>
+      <td class="value-cell">
+        {{ payment_order.payment_priority|default:"5" }}
+      </td>
+      <td class="label-cell">Код</td>
+      <td class="value-cell">{{ payment_order.payment_code|default:"0" }}</td>
+      <td class="label-cell">Рез. поле</td>
+      <td class="value-cell">{{ payment_order.reserve_field|default:"" }}</td>
+    </tr>
+  </table>
+
+  <div class="purpose-block">
+    <div class="purpose-label">Назначение платежа</div>
+    <div class="purpose-value">
+      {{ payment_order.payment_purpose|linebreaksbr }}
+    </div>
+  </div>
+
+  <div class="signatures-row">
+    <div class="signature-label">Подписи</div>
+    <div class="signature-line"></div>
+    <div class="bank-notes">Отметки банка</div>
+  </div>
+</div>
+
+<style>
+  .payment-order-sheet {
+    font-family: "Times New Roman", serif;
+    background: #fff;
+    color: #000;
+    padding: 10mm 10mm 8mm 10mm;
+    border: 1px solid #000;
+    width: 190mm;
+    min-height: auto;
+    margin: 0 auto;
+    page-break-inside: avoid;
+    line-height: 1.1;
+    font-size: 10pt;
+  }
+  .sheet-top-line {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+    font-size: 9.5pt;
+    margin-bottom: 4px;
+    column-gap: 6px;
+  }
+  .caption {
+    border-bottom: 1px solid #000;
+    padding-bottom: 2px;
+    margin-right: 0;
+  }
+  .form-codes {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+  }
+  .form-number,
+  .form-kind {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    min-width: 60px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 11pt;
+  }
+  .sheet-title {
+    margin-bottom: 6px;
+  }
+  .title-text {
+    font-weight: 700;
+    font-size: 13pt;
+    margin-bottom: 4px;
+  }
+  .title-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 3px 0;
+    font-size: 9.5pt;
+    gap: 6px;
+  }
+  .meta-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .meta-label {
+    margin-right: 6px;
+    font-weight: 600;
+  }
+  .amount-line {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    border-bottom: 1px solid #000;
+    padding: 4px 0;
+    font-size: 10pt;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .amount-label {
+    font-weight: 700;
+  }
+  .order-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin-bottom: 6px;
+    table-layout: fixed;
+  }
+  .order-table td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+    vertical-align: middle;
+    word-break: break-word;
+  }
+  .label-cell {
+    background: #fff;
+    font-weight: 600;
+    width: 100px;
+  }
+  .value-cell {
+    font-weight: 400;
+  }
+  .text-left {
+    font-weight: 600;
+  }
+  .code-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin-bottom: 6px;
+    table-layout: fixed;
+  }
+  .code-table td {
+    border: 1px solid #000;
+    padding: 3px 4px;
+    word-break: break-word;
+  }
+  .code-table.wide td {
+    width: auto;
+  }
+  .code-table.narrow td {
+    width: 8.33%;
+  }
+  .purpose-block {
+    border: 1px solid #000;
+    padding: 6px;
+    font-size: 9.5pt;
+    margin-bottom: 10px;
+    min-height: 46px;
+  }
+  .purpose-label {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .signatures-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 140px;
+    align-items: center;
+    gap: 8px;
+    font-size: 9.5pt;
+  }
+  .signature-line {
+    height: 12px;
+    border-bottom: 1px solid #000;
+  }
+  .signature-label,
+  .bank-notes {
+    font-weight: 600;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 10mm 8mm;
+  }
+  @media print {
+    body {
+      background: #fff;
+      margin: 0;
+    }
+    .not-print {
+      display: none !important;
+    }
+    .payment-order-sheet {
+      box-shadow: none;
+    }
+    main.section,
+    main .container {
+      margin: 0;
+      padding: 0;
+      width: auto;
+    }
+  }
+</style>
+{% endblock %}

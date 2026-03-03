@@ -1,0 +1,276 @@
+<form method="post">
+  {% csrf_token %}
+  <div class="row">
+    <div class="input-field col s4">
+      {{ form.number }}
+      <label class="active" for="{{ form.number.id_for_label }}">Номер</label>
+    </div>
+    <div class="input-field col s4">
+      {{ form.date }}
+      <label class="active" for="{{ form.date.id_for_label }}">Дата</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s6 select-field">
+      {{ form.executor }}
+      <label class="active" for="{{ form.executor.id_for_label }}">Исполнитель</label>
+    </div>
+    <div class="input-field col s6 select-field">
+      {{ form.customer }}
+      <label class="active" for="{{ form.customer.id_for_label }}">Заказчик</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      {{ form.note }}
+      <label for="{{ form.note.id_for_label }}">Примечание</label>
+    </div>
+  </div>
+
+  <h5>Перечень работ (услуг)</h5>
+  {{ formset.management_form }}
+  <table class="striped responsive-table act-lines-table" id="lines-table">
+    <thead>
+      <tr>
+        <th style="width: 60px">№</th>
+        <th>Наименование работы (услуги)</th>
+        <th style="width: 120px">Ед. изм.</th>
+        <th style="width: 120px">Количество</th>
+        <th style="width: 120px">Цена</th>
+        <th style="width: 100px">НДС, %</th>
+        <th style="width: 140px">Сумма без НДС</th>
+        <th style="width: 120px">Сумма НДС</th>
+        <th style="width: 140px">Сумма с НДС</th>
+        <th style="width: 100px">Удалить</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line_form in formset.forms %}
+      <tr>
+        <td>{{ line_form.id }} {{ line_form.order }}</td>
+        <td>{{ line_form.name }}</td>
+        <td>{{ line_form.unit }}</td>
+        <td>{{ line_form.quantity }}</td>
+        <td>{{ line_form.price }}</td>
+        <td>{{ line_form.vat_rate }}</td>
+        <td class="amount-cell"><span class="line-amount-net">0.00</span></td>
+        <td class="amount-cell"><span class="line-amount-vat">0.00</span></td>
+        <td class="amount-cell"><span class="line-amount-total">0.00</span></td>
+        <td class="center-align">
+          <input type="checkbox" name="{{ line_form.DELETE.html_name }}" class="delete-checkbox" style="display: none;" />
+          <button type="button" class="btn-small red lighten-1 delete-line-btn">
+            <i class="material-icons">delete</i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="row" style="margin-top: 10px">
+    <div class="col s12 right-align">
+      <button type="button" class="btn" id="add-line">
+        <i class="material-icons left">add</i>Добавить строку
+      </button>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top: 20px">
+    <div class="col s12">
+      <table class="summary-table">
+        <tr>
+          <td class="label">Итого без НДС:</td>
+          <td class="value" id="summary-total-net">0.00</td>
+        </tr>
+        <tr>
+          <td class="label">НДС:</td>
+          <td class="value" id="summary-total-vat">0.00</td>
+        </tr>
+        <tr>
+          <td class="label">Всего (с учётом НДС):</td>
+          <td class="value" id="summary-total-with-vat">0.00</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top: 20px">
+    <div class="col s12 right-align">
+      <button type="submit" class="btn waves-effect green">
+        <i class="material-icons left">save</i>
+        {{ submit_label|default:"Сохранить" }}
+      </button>
+      {% if form.instance.id %}
+      <a
+        href="{% url 'service_acts:view' form.instance.id %}"
+        class="btn"
+      >
+        <i class="material-icons left">visibility</i>Просмотр
+      </a>
+      {% endif %}
+      <a href="{% url 'service_acts:list' %}" class="btn grey">
+        <i class="material-icons left">cancel</i>Отмена
+      </a>
+    </div>
+  </div>
+</form>
+
+{% with formset.empty_form as empty_form %}
+<script type="text/template" id="line-template">
+  <tr>
+    <td>{{ empty_form.id }} {{ empty_form.order }}</td>
+    <td>{{ empty_form.name }}</td>
+    <td>{{ empty_form.unit }}</td>
+    <td>{{ empty_form.quantity }}</td>
+    <td>{{ empty_form.price }}</td>
+    <td>{{ empty_form.vat_rate }}</td>
+    <td class="amount-cell"><span class="line-amount-net">0.00</span></td>
+    <td class="amount-cell"><span class="line-amount-vat">0.00</span></td>
+    <td class="amount-cell"><span class="line-amount-total">0.00</span></td>
+    <td class="center-align">
+      <input type="checkbox" name="{{ empty_form.DELETE.html_name }}" class="delete-checkbox" style="display: none;" />
+      <button type="button" class="btn-small red lighten-1 delete-line-btn">
+        <i class="material-icons">delete</i>
+      </button>
+    </td>
+  </tr>
+</script>
+{% endwith %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.querySelector('#lines-table tbody');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const addButton = document.getElementById('add-line');
+    const templateHtml = document.getElementById('line-template').innerHTML.trim();
+
+    const parseDecimal = (value) => {
+      const num = parseFloat(value.replace(',', '.'));
+      return isNaN(num) ? 0 : num;
+    };
+
+    const formatMoney = (value) => {
+      return value.toFixed(2);
+    };
+
+    const computeLineAmounts = (row) => {
+      const qtyInput = row.querySelector('[name$="-quantity"]');
+      const priceInput = row.querySelector('[name$="-price"]');
+      const vatInput = row.querySelector('[name$="-vat_rate"]');
+      const netCell = row.querySelector('.line-amount-net');
+      const vatCell = row.querySelector('.line-amount-vat');
+      const totalCell = row.querySelector('.line-amount-total');
+      const qty = parseDecimal(qtyInput ? qtyInput.value : '0');
+      const price = parseDecimal(priceInput ? priceInput.value : '0');
+      const vatRate = parseDecimal(vatInput ? vatInput.value : '0');
+      const net = qty * price;
+      const vat = net * vatRate / 100;
+      const total = net + vat;
+      if (netCell) netCell.textContent = formatMoney(net);
+      if (vatCell) vatCell.textContent = formatMoney(vat);
+      if (totalCell) totalCell.textContent = formatMoney(total);
+      return { net, vat, total };
+    };
+
+    const updateTotals = () => {
+      let netSum = 0;
+      let vatSum = 0;
+      document.querySelectorAll('#lines-table tbody tr').forEach((row) => {
+        const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (deleteCheckbox && deleteCheckbox.checked) {
+          return;
+        }
+        const amounts = computeLineAmounts(row);
+        netSum += amounts.net;
+        vatSum += amounts.vat;
+      });
+      const withVat = netSum + vatSum;
+      const totalNetNode = document.getElementById('summary-total-net');
+      const totalVatNode = document.getElementById('summary-total-vat');
+      const totalWithVatNode = document.getElementById('summary-total-with-vat');
+      if (totalNetNode) totalNetNode.textContent = formatMoney(netSum);
+      if (totalVatNode) totalVatNode.textContent = formatMoney(vatSum);
+      if (totalWithVatNode) totalWithVatNode.textContent = formatMoney(withVat);
+    };
+
+    const wireRow = (row) => {
+      const qtyInput = row.querySelector('[name$="-quantity"]');
+      const priceInput = row.querySelector('[name$="-price"]');
+      const vatInput = row.querySelector('[name$="-vat_rate"]');
+      const deleteBtn = row.querySelector('.delete-line-btn');
+      const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      [qtyInput, priceInput, vatInput].forEach((input) => {
+        if (input) {
+          input.addEventListener('input', updateTotals);
+        }
+      });
+      if (deleteBtn && deleteCheckbox) {
+        deleteBtn.addEventListener('click', () => {
+          deleteCheckbox.checked = true;
+          row.style.display = 'none';
+          updateTotals();
+        });
+      }
+      computeLineAmounts(row);
+    };
+
+    document.querySelectorAll('#lines-table tbody tr').forEach((row) => wireRow(row));
+    updateTotals();
+
+    if (addButton) {
+      addButton.addEventListener('click', () => {
+        const currentCount = parseInt(totalFormsInput.value, 10) || 0;
+        const newHtml = templateHtml.replace(/__prefix__/g, currentCount);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = newHtml;
+        const newRow = temp.firstElementChild;
+        if (!newRow) return;
+        const orderInput = newRow.querySelector('[name$="-order"]');
+        if (orderInput && !orderInput.value) {
+          orderInput.value = currentCount + 1;
+        }
+        const vatInput = newRow.querySelector('[name$="-vat_rate"]');
+        if (vatInput && !vatInput.value) {
+          vatInput.value = '0.00';
+        }
+        tableBody.appendChild(newRow);
+        totalFormsInput.value = currentCount + 1;
+        wireRow(newRow);
+        updateTotals();
+      });
+    }
+  });
+</script>
+
+<style>
+  .act-lines-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .act-lines-table th,
+  .act-lines-table td {
+    vertical-align: middle;
+  }
+  .act-lines-table td input,
+  .act-lines-table td select {
+    margin: 0;
+  }
+  .act-lines-table td .delete-line-btn {
+    margin-left: 6px;
+  }
+  .summary-table {
+    width: 320px;
+    border-collapse: collapse;
+  }
+  .summary-table .label {
+    font-weight: 600;
+    padding: 4px 6px;
+  }
+  .summary-table .value {
+    text-align: right;
+    padding: 4px 6px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+</style>

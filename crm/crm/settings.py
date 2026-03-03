@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'organizations',
     'positions',
     'products',
-    'proxies',
+    'payment_orders',
+    'reconciliation_acts',
+    'service_acts',
     'units',
 ]
 
@@ -89,7 +91,7 @@ DATABASES = {
         'NAME': 'dov_django',
         'USER': 'postgres',
         'PASSWORD': '11111111',
-        'HOST': '192.168.0.104',
+        'HOST': '172.20.10.2',
         'PORT': '5432',
     }
 }

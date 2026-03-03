@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Акты выполненных работ{% endblock %}
+{% block content %}
+<h4>Акты выполненных работ</h4>
+<div class="right-align" style="margin-bottom: 20px">
+  <a href="{% url 'service_acts:create' %}" class="btn waves-effect">
+    <i class="material-icons left">add</i>Добавить
+  </a>
+</div>
+
+<table class="highlight striped responsive-table table-separated">
+  <thead>
+    <tr>
+      <th>№</th>
+      <th>Дата</th>
+      <th>Исполнитель</th>
+      <th>Заказчик</th>
+      <th class="right-align">Сумма с НДС</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for act in acts %}
+    <tr>
+      <td>{{ act.number }}</td>
+      <td>{{ act.date|date:"d.m.Y" }}</td>
+      <td>{{ act.executor.name }}</td>
+      <td>{{ act.customer.name }}</td>
+      <td class="right-align">{{ act.total_with_vat|floatformat:2 }}</td>
+      <td>
+        <a href="{% url 'service_acts:view' act.pk %}" class="btn-small green">
+          <i class="material-icons">visibility</i>
+        </a>
+        <a href="{% url 'service_acts:edit' act.pk %}" class="btn-small orange">
+          <i class="material-icons">edit</i>
+        </a>
+        <a href="{% url 'service_acts:delete' act.pk %}" class="btn-small red" onclick="return confirm('Удалить акт?');">
+          <i class="material-icons">delete</i>
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6" class="center-align">Нет записей</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

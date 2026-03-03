@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование акта выполненных работ{% endblock %}
+{% block content %}
+<h4>Редактирование акта выполненных работ № {{ form.instance.number }}</h4>
+{% include 'service_acts/_form.html' with submit_label='Обновить' %}
+{% endblock %}

@@ -1,8 +1,36 @@
 <!-- templates/includes/_sidenav.html -->
 <ul class="sidenav sidenav-fixed">
-	<li class="logo-container">
-		<i class="material-icons left" style="padding-top: 20px;">description</i>
-		{% if page_title %}{{ page_title }}{% else %}Документы{% endif %}
-	</li>
-	<li><a href="{% url 'proxies:list' %}" class="blue-text">Доверенности</a></li>
+  <li
+    class="logo-container"
+    style="
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 12px;
+      font-size: 16px;
+      line-height: 1.3;
+      font-weight: 600;
+      white-space: normal;
+    "
+  >
+    <i class="material-icons" aria-hidden="true">description</i>
+    <span
+      >{% if page_title %}{{ page_title }}{% else %}Документы{% endif %}</span
+    >
+  </li>
+  <li>
+    <a href="{% url 'payment_orders:list' %}" class="grey-text text-darken-3"
+      >Платёжные поручения</a
+    >
+  </li>
+  <li>
+    <a href="{% url 'reconciliation_acts:list' %}" class="grey-text text-darken-3"
+      >Акты сверки взаиморасчётов</a
+    >
+  </li>
+  <li>
+    <a href="{% url 'service_acts:list' %}" class="grey-text text-darken-3"
+      >Акты выполненных работ</a
+    >
+  </li>
 </ul>

@@ -1,0 +1,9 @@
+{% extends 'base.html' %} {% block title %}Удаление акта сверки{% endblock %} {% block content %}
+<h4>Удалить акт сверки № {{ object.number }}?</h4>
+<form method="post">
+  {% csrf_token %}
+  <p>Вы уверены, что хотите удалить этот акт сверки?</p>
+  <button class="btn red">Удалить</button>
+  <a href="{% url 'reconciliation_acts:list' %}" class="btn grey">Отмена</a>
+</form>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %} {% block title %}Акты сверки взаиморасчётов{% endblock %} {% block content %}
+<h4>Акты сверки взаиморасчётов</h4>
+<div class="right-align" style="margin-bottom: 20px">
+  <a
+    href="{% url 'reconciliation_acts:create' %}"
+    class="btn waves-effect"
+  >
+    <i class="material-icons left">add</i>Добавить
+  </a>
+</div>
+
+<table class="highlight striped responsive-table table-separated">
+  <thead>
+    <tr>
+      <th>№</th>
+      <th>Дата</th>
+      <th>Организация</th>
+      <th>Контрагент</th>
+      <th>Период</th>
+      <th class="right-align">Вх. сальдо</th>
+      <th class="right-align">Исх. сальдо</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for act in acts %}
+    <tr>
+      <td>{{ act.number }}</td>
+      <td>{{ act.date|date:"d.m.Y" }}</td>
+      <td>{{ act.organization.name }}</td>
+      <td>{{ act.customer.name }}</td>
+      <td>
+        {{ act.period_from|date:"d.m.Y" }} — {{ act.period_to|date:"d.m.Y" }}
+      </td>
+      <td class="right-align">{{ act.opening_balance|floatformat:2 }}</td>
+      <td class="right-align">{{ act.closing_balance|floatformat:2 }}</td>
+      <td>
+        <a
+          href="{% url 'reconciliation_acts:view' act.pk %}"
+          class="btn-small green"
+        >
+          <i class="material-icons">visibility</i>
+        </a>
+        <a
+          href="{% url 'reconciliation_acts:edit' act.pk %}"
+          class="btn-small orange"
+        >
+          <i class="material-icons">edit</i>
+        </a>
+        <a
+          href="{% url 'reconciliation_acts:delete' act.pk %}"
+          class="btn-small red"
+          onclick="return confirm('Удалить акт сверки?');"
+        >
+          <i class="material-icons">delete</i>
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="8" class="center-align">Нет записей</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

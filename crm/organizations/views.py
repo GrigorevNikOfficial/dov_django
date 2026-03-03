@@ -19,14 +19,14 @@ class OrganizationListView(ListView):
 class OrganizationCreateView(SuccessMessageMixin, CreateView):
     model = Organization
     template_name = 'organizations/create.html'
-    fields = ['name', 'address', 'account', 'chief', 'financial_chief']
+    fields = ['name', 'address', 'inn', 'kpp', 'account', 'chief', 'financial_chief']
     success_url = reverse_lazy('organizations:list')
     success_message = "Организация успешно создана."
 
 class OrganizationUpdateView(SuccessMessageMixin, UpdateView):
     model = Organization
     template_name = 'organizations/edit.html'
-    fields = ['name', 'address', 'account', 'chief', 'financial_chief']
+    fields = ['name', 'address', 'inn', 'kpp', 'account', 'chief', 'financial_chief']
     success_url = reverse_lazy('organizations:list')
     success_message = "Организация успешно обновлена."
 

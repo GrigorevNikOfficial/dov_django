@@ -19,14 +19,14 @@ class CustomerListView(ListView):
 class CustomerCreateView(SuccessMessageMixin, CreateView):
     model = Customer
     template_name = 'customers/create.html'
-    fields = ['name']
+    fields = ['name', 'inn', 'kpp', 'account']
     success_url = reverse_lazy('customers:list')
     success_message = "Контрагент успешно создан."
 
 class CustomerUpdateView(SuccessMessageMixin, UpdateView):
     model = Customer
     template_name = 'customers/edit.html'
-    fields = ['name']
+    fields = ['name', 'inn', 'kpp', 'account']
     success_url = reverse_lazy('customers:list')
     success_message = "Контрагент успешно обновлён."
 

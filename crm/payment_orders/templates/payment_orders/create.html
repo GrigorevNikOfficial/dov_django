@@ -1,0 +1,133 @@
+{% extends 'base.html' %} {% block title %}Создание платёжного поручения
+{%endblock %} {% block content %}
+<h4>Создание платёжного поручения</h4>
+<form method="post">
+  {% csrf_token %}
+  <div class="row">
+    <div class="input-field col s4">
+      {{ form.number }}
+      <label for="{{ form.number.id_for_label }}">Номер</label>
+    </div>
+    <div class="input-field col s4">
+      {{ form.date }}
+      <label class="active" for="{{ form.date.id_for_label }}">Дата</label>
+    </div>
+    <div class="input-field col s4">
+      {{ form.payment_kind }}
+      <label for="{{ form.payment_kind.id_for_label }}">Вид платежа</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s4">
+      {{ form.amount }}
+      <label for="{{ form.amount.id_for_label }}">Сумма</label>
+    </div>
+    <div class="input-field col s8">
+      {{ form.amount_text }}
+      <label for="{{ form.amount_text.id_for_label }}">Сумма прописью</label>
+    </div>
+  </div>
+
+  <h5>Плательщик</h5>
+  <div class="row">
+    <div class="input-field col s6 select-field">
+      {{ form.organization }}
+      <label for="{{ form.organization.id_for_label }}">Организация</label>
+    </div>
+  </div>
+
+  <h5>Получатель</h5>
+  <div class="row">
+    <div class="input-field col s6 select-field">
+      {{ form.recipient }}
+      <label for="{{ form.recipient.id_for_label }}">Получатель</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s12">
+      {{ form.payment_purpose }}
+      <label for="{{ form.payment_purpose.id_for_label }}"
+        >Назначение платежа</label
+      >
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s6">
+      {{ form.kbk }}
+      <label for="{{ form.kbk.id_for_label }}">КБК</label>
+    </div>
+    <div class="input-field col s6">
+      {{ form.oktmo }}
+      <label for="{{ form.oktmo.id_for_label }}">ОКТМО</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s2">
+      {{ form.payment_operation_type }}
+      <label for="{{ form.payment_operation_type.id_for_label }}"
+        >Вид оп.</label
+      >
+    </div>
+    <div class="input-field col s2">
+      {{ form.payment_due_date }}
+      <label for="{{ form.payment_due_date.id_for_label }}">Срок плат.</label>
+    </div>
+    <div class="input-field col s2">
+      {{ form.payment_assignment_code }}
+      <label for="{{ form.payment_assignment_code.id_for_label }}"
+        >Наз. пл.</label
+      >
+    </div>
+    <div class="input-field col s2">
+      {{ form.payment_priority }}
+      <label for="{{ form.payment_priority.id_for_label }}">Очер. плат.</label>
+    </div>
+    <div class="input-field col s2">
+      {{ form.payment_code }}
+      <label for="{{ form.payment_code.id_for_label }}">Код</label>
+    </div>
+    <div class="input-field col s2">
+      {{ form.reserve_field }}
+      <label for="{{ form.reserve_field.id_for_label }}">Рез. поле</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s3">
+      {{ form.payment_basis }}
+      <label for="{{ form.payment_basis.id_for_label }}"
+        >Основание платежа</label
+      >
+    </div>
+    <div class="input-field col s3">
+      {{ form.tax_period }}
+      <label for="{{ form.tax_period.id_for_label }}">Налоговый период</label>
+    </div>
+    <div class="input-field col s3">
+      {{ form.doc_number }}
+      <label for="{{ form.doc_number.id_for_label }}">№ документа</label>
+    </div>
+    <div class="input-field col s3">
+      {{ form.doc_date }}
+      <label class="active" for="{{ form.doc_date.id_for_label }}"
+        >Дата документа</label
+      >
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col s12 right-align">
+      <button type="submit" class="btn waves-effect green">
+        <i class="material-icons left">save</i>Сохранить
+      </button>
+      <a href="{% url 'payment_orders:list' %}" class="btn grey">
+        <i class="material-icons left">cancel</i>Отмена
+      </a>
+    </div>
+  </div>
+</form>
+{% endblock %}

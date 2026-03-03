@@ -1,21 +1,33 @@
 /* styles.css */
 
 /* Основные сбросы и настройки */
+:root {
+    --primary-bg: #f2f4f5;
+    --surface: #ffffff;
+    --stroke: #d1d5db;
+    --muted: #6b7280;
+    --primary: #607d8b;
+    --primary-dark: #546e7a;
+    --accent: #90a4ae;
+}
+
 body {
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-    background-color: #f5f5f5;
+    background-color: var(--primary-bg);
+    color: #222;
 }
 
 /* Главный контейнер контента */
 main {
     flex: 1 0 auto;
     margin-left: 300px; /* Основной отступ для контента */
-    padding: 20px;
+    padding: 24px;
     width: calc(100% - 300px);
     box-sizing: border-box;
     transition: margin-left .3s;
+    background: var(--primary-bg);
 }
 
 /* Фиксированный сайдбар */
@@ -25,12 +37,13 @@ main {
     left: 0;
     top: 0;
     bottom: 0;
-    background-color: #fff;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    background-color: var(--surface);
+    box-shadow: 2px 0 12px rgba(0,0,0,0.08);
     z-index: 999;
     overflow-y: auto;
     transform: translateX(0);
     transition: transform .3s;
+    border-right: 1px solid var(--stroke);
 }
 
 /* Навбар */
@@ -40,9 +53,9 @@ nav.navbar {
     left: 300px;
     right: 0;
     height: 64px;
-    background-color: #2196f3;
+    background-color: var(--primary-dark);
     z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     transition: left .3s;
 }
 
@@ -50,8 +63,8 @@ nav.navbar {
 .container {
     width: 100%;
     max-width: 1200px;
-    margin: 80px auto 20px; /* Учитываем высоту навбара */
-    padding: 0 15px;
+    margin: 80px auto 24px; /* Учитываем высоту навбара */
+    padding: 0 18px;
     box-sizing: border-box;
 }
 
@@ -60,9 +73,9 @@ nav.navbar {
     padding: 0 20px;
     height: 64px;
     line-height: 64px;
-    font-size: 24px;
-    border-bottom: 1px solid #eee;
-    background-color: #2196f3;
+    font-size: 22px;
+    border-bottom: 1px solid var(--stroke);
+    background-color: var(--primary-dark);
     color: white;
     position: sticky;
     top: 0;
@@ -103,12 +116,46 @@ nav .nav-wrapper {
 }
 
 nav.navbar .brand-logo {
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 700;
 }
 
 nav ul li a {
     color: white;
+}
+
+/* Серый акцент для кнопок без спец-цвета */
+.btn,
+.btn-small,
+.btn-large {
+    background-color: var(--primary);
+}
+.btn:hover,
+.btn-small:hover,
+.btn-large:hover {
+    background-color: var(--primary-dark);
+}
+.btn.blue,
+.btn-small.blue {
+    background-color: var(--primary);
+}
+.btn.blue:hover,
+.btn-small.blue:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Таблицы с разделителями строк */
+.table-separated tbody tr + tr td {
+    border-top: 1px solid var(--stroke);
+}
+.table-separated th {
+    background: #f7f7f9;
+    color: #111;
+    font-weight: 700;
+}
+.table-separated td,
+.table-separated th {
+    border-bottom: 1px solid var(--stroke);
 }
 
 /* Стили для печати */

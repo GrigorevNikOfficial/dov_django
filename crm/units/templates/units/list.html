@@ -4,12 +4,12 @@
 {% block content %}
 <h4>Единицы измерения</h4>
 <div class='right-align' style='margin-bottom: 20px;'>
-	<a href='{% url "units:create" %}' class='btn blue'>
+	<a href='{% url "units:create" %}' class='btn'>
 		<i class='material-icons left'>add</i>Добавить
 	</a>
 </div>
 
-<table class='highlight'>
+<table class="highlight striped responsive-table table-separated">
 	<thead>
 		<tr><th>ID</th><th>Название</th><th>Действия</th></tr>
 	</thead>

@@ -1,0 +1,3 @@
+{% extends 'base.html' %} {% block title %}Редактирование акта сверки {% endblock %} {% block content %}
+<h4>Редактирование акта сверки № {{ form.instance.number }}</h4>
+{% include 'reconciliation_acts/_form.html' with submit_label="Обновить" %} {% endblock %}

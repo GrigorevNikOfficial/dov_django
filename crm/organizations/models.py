@@ -3,6 +3,8 @@ from django.db import models
 class Organization(models.Model):
     name = models.CharField("Название", max_length=255)
     address = models.CharField("Адрес", max_length=255)
+    inn = models.CharField("ИНН", max_length=12, blank=True)
+    kpp = models.CharField("КПП", max_length=9, blank=True)
     account = models.ForeignKey(
         'accounts.Account',
         on_delete=models.PROTECT,

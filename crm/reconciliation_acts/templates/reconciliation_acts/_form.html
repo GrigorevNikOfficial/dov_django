@@ -1,0 +1,248 @@
+<form method="post">
+  {% csrf_token %}
+  <div class="row">
+    <div class="input-field col s4">
+      {{ form.number }}
+      <label for="{{ form.number.id_for_label }}">Номер</label>
+    </div>
+    <div class="input-field col s4">
+      {{ form.date }}
+      <label class="active" for="{{ form.date.id_for_label }}">Дата</label>
+    </div>
+    <div class="input-field col s4">
+      {{ form.organization }}
+      <label for="{{ form.organization.id_for_label }}">Организация</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s6">
+      {{ form.customer }}
+      <label for="{{ form.customer.id_for_label }}">Контрагент</label>
+    </div>
+    <div class="input-field col s3">
+      {{ form.period_from }}
+      <label class="active" for="{{ form.period_from.id_for_label }}"
+        >Период с</label
+      >
+    </div>
+    <div class="input-field col s3">
+      {{ form.period_to }}
+      <label class="active" for="{{ form.period_to.id_for_label }}"
+        >Период по</label
+      >
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="input-field col s3">
+      {{ form.opening_balance }}
+      <label for="{{ form.opening_balance.id_for_label }}">Сальдо дебет (орг.)</label>
+    </div>
+    <div class="input-field col s3">
+      {{ form.closing_balance }}
+      <label for="{{ form.closing_balance.id_for_label }}">Сальдо кредит (орг.)</label>
+    </div>
+    <div class="input-field col s3">
+      {{ form.opening_balance_customer }}
+      <label for="{{ form.opening_balance_customer.id_for_label }}">Сальдо дебет (контр.)</label>
+    </div>
+    <div class="input-field col s3">
+      {{ form.closing_balance_customer }}
+      <label for="{{ form.closing_balance_customer.id_for_label }}">Сальдо кредит (контр.)</label>
+    </div>
+  </div>
+
+  <h5>Строки акта</h5>
+  {{ formset.management_form }}
+  <table class="striped responsive-table act-lines-table" id="lines-table">
+    <thead>
+      <tr>
+        <th rowspan="2" style="width: 80px">Порядок</th>
+        <th rowspan="2" style="width: 150px">Дата</th>
+        <th rowspan="2">Документ</th>
+        <th colspan="2">
+          По данным {{ form.instance.organization.name|default:"организации" }}
+        </th>
+        <th colspan="2">
+          По данным {{ form.instance.customer.name|default:"контрагента" }}
+        </th>
+        <th rowspan="2" style="width: 120px">Удалить</th>
+      </tr>
+      <tr>
+        <th style="width: 120px">Списано (дебет)</th>
+        <th style="width: 120px">Поступило (кредит)</th>
+        <th style="width: 120px">Списано (дебет)</th>
+        <th style="width: 120px">Поступило (кредит)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line_form in formset.forms %}
+      <tr>
+        <td>{{ line_form.id }} {{ line_form.order }}</td>
+        <td>{{ line_form.date }}</td>
+        <td>{{ line_form.document }}</td>
+        <td>
+          {{ line_form.debit }}
+        </td>
+        <td>
+          {{ line_form.credit }}
+        </td>
+        <td>
+          {{ line_form.customer_debit }}
+        </td>
+        <td>
+          {{ line_form.customer_credit }}
+        </td>
+        <td class="center-align">
+          <input type="checkbox" name="{{ line_form.DELETE.html_name }}" class="delete-checkbox" style="display: none;" />
+          <button type="button" class="btn-small red lighten-1 delete-line-btn">
+            <i class="material-icons">delete</i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="row" style="margin-top: 10px">
+    <div class="col s12 right-align">
+      <button type="button" class="btn" id="add-line">
+        <i class="material-icons left">add</i>Добавить строку
+      </button>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top: 20px">
+    <div class="col s12 right-align">
+      <button type="submit" class="btn waves-effect green">
+        <i class="material-icons left">save</i>
+        {{ submit_label|default:"Сохранить" }}
+      </button>
+      {% if form.instance.id %}
+      <a
+        href="{% url 'reconciliation_acts:view' form.instance.id %}"
+        class="btn"
+      >
+        <i class="material-icons left">visibility</i>Просмотр
+      </a>
+      {% endif %}
+      <a href="{% url 'reconciliation_acts:list' %}" class="btn grey">
+        <i class="material-icons left">cancel</i>Отмена
+      </a>
+      
+    </div>
+  </div>
+</form>
+
+{% with formset.empty_form as empty_form %}
+<script type="text/template" id="line-template">
+  <tr>
+    <td>{{ empty_form.id }} {{ empty_form.order }}</td>
+    <td>{{ empty_form.date }}</td>
+    <td>{{ empty_form.document }}</td>
+    <td>{{ empty_form.debit }}</td>
+    <td>{{ empty_form.credit }}</td>
+    <td>{{ empty_form.customer_debit }}</td>
+    <td>{{ empty_form.customer_credit }}</td>
+    <td class="center-align">
+      <input type="checkbox" name="{{ empty_form.DELETE.html_name }}" class="delete-checkbox" style="display: none;" />
+      <button type="button" class="btn-small red lighten-1 delete-line-btn">
+        <i class="material-icons">delete</i>
+      </button>
+    </td>
+  </tr>
+</script>
+{% endwith %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tableBody = document.querySelector('#lines-table tbody');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const addButton = document.getElementById('add-line');
+    const templateHtml = document.getElementById('line-template').innerHTML.trim();
+
+    const setupSync = (row) => {
+      const orgDebit = row.querySelector('[name$="-debit"]');
+      const orgCredit = row.querySelector('[name$="-credit"]');
+      const ctrDebit = row.querySelector('[name$="-customer_debit"]');
+      const ctrCredit = row.querySelector('[name$="-customer_credit"]');
+      if (!orgDebit || !orgCredit || !ctrDebit || !ctrCredit) return;
+
+      const syncIfEmpty = (source, target) => {
+        source.addEventListener('input', () => {
+          if (!target.dataset.manual || target.dataset.manual === '0') {
+            if (!target.value) {
+              target.value = source.value;
+            }
+          }
+        });
+        target.addEventListener('input', () => {
+          target.dataset.manual = target.value ? '1' : '0';
+        });
+      };
+
+      syncIfEmpty(orgDebit, ctrCredit);
+      syncIfEmpty(orgCredit, ctrDebit);
+    };
+
+    document.querySelectorAll('#lines-table tbody tr').forEach((row) => {
+      setupSync(row);
+      const deleteBtn = row.querySelector('.delete-line-btn');
+      const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (deleteBtn && deleteCheckbox) {
+        deleteBtn.addEventListener('click', () => {
+          deleteCheckbox.checked = true;
+          row.style.display = 'none';
+        });
+      }
+    });
+
+    if (addButton) {
+      addButton.addEventListener('click', () => {
+        const currentCount = parseInt(totalFormsInput.value, 10) || 0;
+        const newHtml = templateHtml.replace(/__prefix__/g, currentCount);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = newHtml;
+        const newRow = temp.firstElementChild;
+        if (!newRow) return;
+        const orderInput = newRow.querySelector('[name$="-order"]');
+        if (orderInput && !orderInput.value) {
+          orderInput.value = currentCount + 1;
+        }
+        tableBody.appendChild(newRow);
+        totalFormsInput.value = currentCount + 1;
+        setupSync(newRow);
+        const deleteBtn = newRow.querySelector('.delete-line-btn');
+        const deleteCheckbox = newRow.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (deleteBtn && deleteCheckbox) {
+          deleteBtn.addEventListener('click', () => {
+            deleteCheckbox.checked = true;
+            newRow.style.display = 'none';
+          });
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .act-lines-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .act-lines-table th,
+  .act-lines-table td {
+    vertical-align: middle;
+  }
+  .act-lines-table td input,
+  .act-lines-table td select {
+    margin: 0;
+  }
+  .act-lines-table td .delete-line-btn {
+    margin-left: 6px;
+  }
+  .act-lines-table .delete-checkbox {
+    display: none;
+  }
+</style>

@@ -19,14 +19,14 @@ class AccountListView(ListView):
 class AccountCreateView(SuccessMessageMixin, CreateView):
     model = Account
     template_name = 'accounts/create.html'
-    fields = ['account', 'bank_name', 'bank_identification_number']
+    fields = ['account', 'bank_name', 'bank_identification_number', 'correspondent_account']
     success_url = reverse_lazy('accounts:list')
     success_message = "Банковский счёт успешно создан."
 
 class AccountUpdateView(SuccessMessageMixin, UpdateView):
     model = Account
     template_name = 'accounts/edit.html'
-    fields = ['account', 'bank_name', 'bank_identification_number']
+    fields = ['account', 'bank_name', 'bank_identification_number', 'correspondent_account']
     success_url = reverse_lazy('accounts:list')
     success_message = "Банковский счёт успешно обновлён."
 

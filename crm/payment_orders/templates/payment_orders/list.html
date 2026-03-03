@@ -1,0 +1,57 @@
+{% extends 'base.html' %} {% block title %}Платёжные поручения{% endblock %} {% block content %}
+<h4>Платёжные поручения</h4>
+<div class="right-align" style="margin-bottom: 20px">
+  <a href="{% url 'payment_orders:create' %}" class="btn waves-effect">
+    <i class="material-icons left">add</i>Добавить
+  </a>
+</div>
+
+<table class="highlight striped responsive-table table-separated">
+  <thead>
+    <tr>
+      <th>№</th>
+      <th>Дата</th>
+      <th>Плательщик</th>
+      <th>Получатель</th>
+      <th class="right-align">Сумма</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for payment_order in payment_orders %}
+    <tr>
+      <td>{{ payment_order.number }}</td>
+      <td>{{ payment_order.date|date:"d.m.Y" }}</td>
+      <td>{{ payment_order.organization.name }}</td>
+      <td>{{ payment_order.recipient.name }}</td>
+      <td class="right-align">{{ payment_order.amount }}</td>
+      <td>
+        <a
+          href="{% url 'payment_orders:view' payment_order.pk %}"
+          class="btn-small green"
+        >
+          <i class="material-icons">visibility</i>
+        </a>
+        <a
+          href="{% url 'payment_orders:edit' payment_order.pk %}"
+          class="btn-small orange"
+        >
+          <i class="material-icons">edit</i>
+        </a>
+        <a
+          href="{% url 'payment_orders:delete' payment_order.pk %}"
+          class="btn-small red"
+          onclick="return confirm('Удалить платёжное поручение?');"
+        >
+          <i class="material-icons">delete</i>
+        </a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6" class="center-align">Нет записей</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
